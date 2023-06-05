@@ -35,25 +35,34 @@ func main(){
 	type List struct {
 		// 添加主键
 		gorm.Model
-		Name string
-		Status string
-		Phone string
-		Email string
-		Address string
+		Name string `gorm:"type:varchar(20);not null"json:"name" binding:"required"`
+		Status string `gorm:"type:varchar(20);not null"json:"status" binding:"required"`
+		Phone string `gorm:"type:int;not null"json:"phone" binding:"required"`
+		Email string `gorm:"type:varchar(40);not null"json:"email" binding:"required"`
+		Address string `gorm:"type:varchar(200);not null"json:"address" binding:"required"`
 	}
 
 	db.AutoMigrate(&List{})
 
-	//db.AutoMigrate(&User{}, &Product{}, &Order{})
-	//
-	//// 创建表时添加后缀
-	//db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&User{})
-
-
-
-
 	// 接口
 	r := gin.Default()
+
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+
+	// create
+
+	// delete
+
+	// update
+
+	// read
+
+
+
 	// 端口号
 	PORT := "3004"
 	r.Run(":" + PORT)
