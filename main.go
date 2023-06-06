@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"strconv"
 	"time"
 )
 func main(){
@@ -150,6 +151,54 @@ func main(){
 			c.JSON(200,gin.H{
                 "msg":"查询成功",
                 "data":dataList,
+                "code":200,
+            })
+		}
+	})
+	r.GET("/user/list" ,func(c *gin.Context){
+		var dataList []List
+        // 查询全部数据，分页数据
+		pageNum,_ := strconv.Atoi(c.Query("pageNum"))
+		pageSize,_ := strconv.Atoi(c.Query("pageSize"))
+		//println(pageNum)
+		//println(pageSize)
+
+		// 判断是否需要分页
+		if pageNum == 0{
+            pageNum = -1
+        }
+		if pageSize == 0{
+			pageSize = -1
+		}
+		// 需要跳过的记录数
+		offsetVal := (pageNum - 1) * pageSize
+		// 不进行分页查询
+		if pageNum == -1 && pageSize == -1{
+			offsetVal = -1
+		}
+		// 查询数据库
+		var total int64
+		//db.Model(dataList)：指定查询操作的数据模型为 dataList，即查询 dataList 对应的数据表。
+		//Count(&total)：查询数据表中符合条件的记录数，并将结果保存到变量 total 中。该函数的参数是一个指针类型，用于接收查询结果。
+		//Limit(-1)：设置查询结果的最大记录数为 -1，表示不限制查询结果的记录数。
+		//Offset(-1)：设置查询结果的偏移量为 -1，表示从倒数第一个记录开始查询。
+		//Find(&dataList)：执行查询操作，并将查询结果保存到变量 dataList 中。该函数的参数是一个指针类型，用于接收查询结果。
+		db.Model(dataList).Count(&total).Limit(pageSize).Offset(offsetVal).Find(&dataList)
+		if len(dataList)==0{
+			c.JSON(200,gin.H{
+                "msg":"查询失败",
+                "data":gin.H{},
+                "code":400,
+            })
+		}else{
+			c.JSON(200,gin.H{
+                "msg":"查询成功",
+                "data":gin.H{
+					"list":dataList,
+					"total":total,
+					"pageNum":pageNum,
+                    "pageSize":pageSize,
+				},
                 "code":200,
             })
 		}
